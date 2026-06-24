@@ -122,12 +122,6 @@ const legendItems = computed(() => {
 
 // ─── ECharts option ───────────────────────────────────────────────────────────
 function buildOption() {
-  if (!data.value || data.value.length === 0) {
-    return {
-      backgroundColor: 'transparent',
-      series: []
-    }
-  }
   return {
     backgroundColor: 'transparent',
     color: COLORS,

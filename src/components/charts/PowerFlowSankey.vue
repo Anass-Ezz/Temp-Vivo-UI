@@ -102,14 +102,7 @@ const chartOptions = computed(() => {
   const nodes = []
   const links = []
   const nodeNameMap = {}
-  const currentHierarchy = tenantStore.selectedHierarchy ? tenantStore.selectedHierarchy.filter(h => h.level >= 0) : []
-
-  if (!currentHierarchy || currentHierarchy.length === 0) {
-    return {
-      backgroundColor: 'transparent',
-      series: []
-    }
-  }
+  const currentHierarchy = tenantStore.selectedHierarchy.filter(h => h.level >= 0)
 
   currentHierarchy.forEach(levelObj => {
     levelObj.nodes.forEach(node => {
@@ -138,13 +131,6 @@ const chartOptions = computed(() => {
       }
     })
   })
-
-  if (nodes.length === 0) {
-    return {
-      backgroundColor: 'transparent',
-      series: []
-    }
-  }
 
   const maxDepth = currentHierarchy.reduce((max, l) => Math.max(max, l.level), 0)
   const levelColors = ['#f59e0b', '#60a5fa', '#34d399', '#a78bfa', '#f87171', '#fb923c']
