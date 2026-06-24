@@ -7,7 +7,7 @@ import L from 'leaflet';
 const router = useRouter();
 
 const stations = [
-  { id: 'S1', name: 'Shell Al Jazira Bouznika', lat: 33.789, lng: -7.159, state: 'healthy', type: 'fuel', ev: true, kwh: 0, flow: 0, kwhTrend: 0, evUtil: 0 }
+  { id: 'S1', name: 'Usine VIVO', lat: 33.7796849, lng: -7.2327647, state: 'healthy', type: 'fuel', ev: true, kwh: 0, flow: 0, kwhTrend: 0, evUtil: 0 }
 ];
 
 const alerts = [];
@@ -26,11 +26,11 @@ onMounted(() => {
 
 function initMap() {
   if (!mapElement.value) return;
-  map = L.map(mapElement.value, { zoomControl: true, attributionControl: true }).setView([31.7917, -7.0926], 6);
+  map = L.map(mapElement.value, { zoomControl: true, attributionControl: true }).setView([33.7796849, -7.2327647], 15);
   
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '© OpenStreetMap · Vivo OIP',
-    maxZoom: 18
+  L.tileLayer('https://mt1.google.com/vt/lyrs=m&hl=fr&gl=MA&x={x}&y={y}&z={z}', {
+    attribution: '© Google Maps',
+    maxZoom: 20
   }).addTo(map);
 
   stations.forEach(s => {
