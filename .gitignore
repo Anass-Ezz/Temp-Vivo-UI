@@ -6,10 +6,9 @@ coverage
 .cache
 .output
 .env
-dist
 .DS_Store
 .idea
 .eslintcache
 api-generator/typedoc.json
 **/.DS_Store
-# src/config/config.js
+# src/config/config.js
