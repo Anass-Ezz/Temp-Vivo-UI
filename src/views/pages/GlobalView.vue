@@ -90,23 +90,23 @@ function filterByState(state) {
       </div>
       <nav class="sb-nav">
         <div class="sb-lbl">Network</div>
-        <div class="sb-item active"><div class="sb-ico">🌐</div><span>Network View</span></div>
-        <div class="sb-item"><div class="sb-ico">📍</div><span>Stations</span><span class="sb-bdg b">1</span></div>
+        <div class="sb-item active"><div class="sb-ico"><i class="pi pi-globe"></i></div><span>Network View</span></div>
+        <div class="sb-item"><div class="sb-ico"><i class="pi pi-map-marker"></i></div><span>Stations</span><span class="sb-bdg b">1</span></div>
 
         <div class="sb-lbl">Suites — Network</div>
-        <div class="sb-item"><div class="sb-ico">⚡</div><span>Energy & EV</span></div>
-        <div class="sb-item"><div class="sb-ico">🦺</div><span>HSE Safety</span><span class="sb-bdg" id="sbSafetyBdg">0</span></div>
-        <div class="sb-item"><div class="sb-ico">🪪</div><span>Surveillance</span><span class="sb-bdg a" id="sbSecBdg">0</span></div>
-        <div class="sb-item"><div class="sb-ico">📈</div><span>Executive</span></div>
+        <div class="sb-item"><div class="sb-ico"><i class="pi pi-bolt"></i></div><span>Energy & EV</span></div>
+        <div class="sb-item"><div class="sb-ico"><i class="pi pi-shield"></i></div><span>HSE Safety</span><span class="sb-bdg" id="sbSafetyBdg">0</span></div>
+        <div class="sb-item"><div class="sb-ico"><i class="pi pi-video"></i></div><span>Surveillance</span><span class="sb-bdg a" id="sbSecBdg">0</span></div>
+        <div class="sb-item"><div class="sb-ico"><i class="pi pi-chart-line"></i></div><span>Executive</span></div>
 
         <div class="sb-lbl">Operations</div>
-        <div class="sb-item"><div class="sb-ico">🔔</div><span>Alerts</span><span class="sb-bdg">0</span></div>
-        <div class="sb-item"><div class="sb-ico">✓</div><span>Tasks</span><span class="sb-bdg b">0</span></div>
-        <div class="sb-item"><div class="sb-ico">📑</div><span>Reports</span></div>
+        <div class="sb-item"><div class="sb-ico"><i class="pi pi-bell"></i></div><span>Alerts</span><span class="sb-bdg">0</span></div>
+        <div class="sb-item"><div class="sb-ico"><i class="pi pi-check-square"></i></div><span>Tasks</span><span class="sb-bdg b">0</span></div>
+        <div class="sb-item"><div class="sb-ico"><i class="pi pi-file"></i></div><span>Reports</span></div>
 
         <div class="sb-lbl">System</div>
-        <div class="sb-item"><div class="sb-ico">⚙</div><span>Administration</span></div>
-        <div class="sb-item"><div class="sb-ico">👤</div><span>My profile</span></div>
+        <div class="sb-item"><div class="sb-ico"><i class="pi pi-cog"></i></div><span>Administration</span></div>
+        <div class="sb-item"><div class="sb-ico"><i class="pi pi-user"></i></div><span>My profile</span></div>
       </nav>
       <div class="sb-foot">
         <span class="sb-dot"></span>
@@ -124,7 +124,7 @@ function filterByState(state) {
           <span class="scope-chip">🇲🇦 National</span>
         </div>
         <div class="tb-search">
-          <span class="tb-search-ico">🔍</span>
+          <span class="tb-search-ico"><i class="pi pi-search"></i></span>
           <input id="globalSearch" placeholder="Search station, alert, city…" />
         </div>
         <div class="tb-r">
@@ -132,8 +132,8 @@ function filterByState(state) {
           <button class="tb-btn">7d</button>
           <button class="tb-btn">30d</button>
           <div class="tb-live">LIVE</div>
-          <div class="tb-ico-btn" title="Notifications">🔔</div>
-          <div class="tb-ico-btn" title="Settings">⚙</div>
+          <div class="tb-ico-btn" title="Notifications"><i class="pi pi-bell"></i></div>
+          <div class="tb-ico-btn" title="Settings"><i class="pi pi-cog"></i></div>
         </div>
       </div>
 
@@ -165,7 +165,7 @@ function filterByState(state) {
 
         <div class="ip">
           <div class="ip-card">
-            <div class="ip-h"><div class="ip-h-l"><div class="ip-h-ico n">⚡</div><strong>Network Status</strong></div><span class="ip-h-r">real-time</span></div>
+            <div class="ip-h"><div class="ip-h-l"><div class="ip-h-ico n"><i class="pi pi-globe"></i></div><strong>Network Status</strong></div><span class="ip-h-r">real-time</span></div>
             <div class="ip-body">
               <div class="ss-grid">
                 <div class="ss-c h" @click="filterByState('healthy')"><div class="ssl">Operational</div><div class="ssv">1</div><div class="ssp">100%</div></div>
@@ -177,7 +177,7 @@ function filterByState(state) {
           </div>
 
           <div class="ip-card">
-            <div class="ip-h"><div class="ip-h-l"><div class="ip-h-ico e">⚡</div><strong>Energy — Top 5 Consumers</strong></div><span class="ip-h-r">today</span></div>
+            <div class="ip-h"><div class="ip-h-l"><div class="ip-h-ico e"><i class="pi pi-bolt"></i></div><strong>Energy — Top 5 Consumers</strong></div><span class="ip-h-r">today</span></div>
             <div class="ip-body">
               <div class="top-list">
                 <div class="text-sm text-gray-400 p-2 text-center" style="font-size: 13px;">No data yet</div>
@@ -186,7 +186,7 @@ function filterByState(state) {
           </div>
 
           <div class="ip-card">
-            <div class="ip-h"><div class="ip-h-l"><div class="ip-h-ico s">🚨</div><strong>Critical Alerts</strong></div><span class="ip-h-r">0 actives</span></div>
+            <div class="ip-h"><div class="ip-h-l"><div class="ip-h-ico s"><i class="pi pi-exclamation-triangle"></i></div><strong>Critical Alerts</strong></div><span class="ip-h-r">0 actives</span></div>
             <div class="ip-body">
               <div class="al-list">
                 <div class="text-sm text-gray-400 p-2 text-center" style="font-size: 13px;">No active alerts</div>
@@ -195,18 +195,18 @@ function filterByState(state) {
           </div>
 
           <div class="ip-card">
-            <div class="ip-h"><div class="ip-h-l"><div class="ip-h-ico i">📋</div><strong>Incidents — 24h</strong></div><span class="ip-h-r">0 total</span></div>
+            <div class="ip-h"><div class="ip-h-l"><div class="ip-h-ico i"><i class="pi pi-list"></i></div><strong>Incidents — 24h</strong></div><span class="ip-h-r">0 total</span></div>
             <div class="ip-body">
               <div class="inc-grid">
-                <div class="inc-c"><div class="ic-ic">🦺</div><div class="ic-v">0</div><div class="ic-l">Safety</div></div>
-                <div class="inc-c"><div class="ic-ic">🪪</div><div class="ic-v">0</div><div class="ic-l">Security</div></div>
-                <div class="inc-c"><div class="ic-ic">⚡</div><div class="ic-v">0</div><div class="ic-l">Energy</div></div>
+                <div class="inc-c"><div class="ic-ic"><i class="pi pi-shield"></i></div><div class="ic-v">0</div><div class="ic-l">Safety</div></div>
+                <div class="inc-c"><div class="ic-ic"><i class="pi pi-video"></i></div><div class="ic-v">0</div><div class="ic-l">Security</div></div>
+                <div class="inc-c"><div class="ic-ic"><i class="pi pi-bolt"></i></div><div class="ic-v">0</div><div class="ic-l">Energy</div></div>
               </div>
             </div>
           </div>
 
           <div class="ip-card">
-            <div class="ip-h"><div class="ip-h-l"><div class="ip-h-ico v">🔌</div><strong>EV Chargers — Top 5 Usage</strong></div><span class="ip-h-r">7d</span></div>
+            <div class="ip-h"><div class="ip-h-l"><div class="ip-h-ico v"><i class="pi pi-car"></i></div><strong>EV Chargers — Top 5 Usage</strong></div><span class="ip-h-r">7d</span></div>
             <div class="ip-body">
               <div class="top-list">
                 <div class="text-sm text-gray-400 p-2 text-center" style="font-size: 13px;">No data yet</div>
