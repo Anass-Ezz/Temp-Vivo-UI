@@ -1,14 +1,20 @@
 <script setup>
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, inject, watch, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
+import { storeToRefs } from 'pinia';
+import { useDashboardStore } from '@/store/dashboard';
+import { useTenantStore } from '@/store/tenant';
+import { config } from '@/config/config';
+import { formatValue } from '@/utils/formatting';
+import { getAddressesForNode } from '@/utils/configHelper';
 
 const router = useRouter();
 
-const stations = [
-  { id: 'S1', name: 'Usine VIVO', lat: 33.7796849, lng: -7.2327647, state: 'healthy', type: 'fuel', ev: true, kwh: 0, flow: 0, kwhTrend: 0, evUtil: 0 }
-];
+const stations = ref([
+  { id: 'S1', name: 'Usine VIVO', lat: 33.7796849, lng: -7.2327647, state: 'healthy', type: 'fuel', ev: true, kwh: '--', kwhUnit: 'kWh', flow: '--', kwhTrend: '--', evUtil: '--' }
+]);
 
 const alerts = [];
 const incidents = [];
@@ -20,9 +26,101 @@ const markers = {};
 const counts = ref({ healthy: 1, degraded: 0, critical: 0, offline: 0 });
 const incCounts = ref({ safety: 0, security: 0, energy: 0 });
 
+const dashboardStore = useDashboardStore();
+const tenantStore = useTenantStore();
+const { range, hierarchyLevel } = storeToRefs(dashboardStore);
+
+const aggregationManager = inject('aggregationManager');
+const subscriberId = `global-view-${Math.random().toString(36).substring(7)}`;
+
+function generatePopupHTML(s) {
+  return `
+    <div class="pp">
+      <div class="pp-h">
+        <strong>${s.name}</strong>
+        <span class="pill ${s.state}">Operational</span>
+      </div>
+      <div class="pp-meta">${s.id} · Fuel Station${s.ev ? ' · EV' : ''}</div>
+      <div class="pp-kpi">
+        <div class="pp-kpi-c"><div class="k">Daily Energy</div><div class="v g">${s.kwh} ${s.kwhUnit || 'kWh'}</div></div>
+        <div class="pp-kpi-c"><div class="k">Daily Flow</div><div class="v">${s.flow}</div></div>
+        <div class="pp-kpi-c"><div class="k">EV Station</div><div class="v g">${s.evUtil}${s.evUtil === '--' ? '' : '%'}</div></div>
+        <div class="pp-kpi-c"><div class="k">Alerts</div><div class="v g">0</div></div>
+      </div>
+      <button class="pp-go" onclick="window.dispatchEvent(new CustomEvent('open-station', {detail: '${s.id}'}))">Open station →</button>
+    </div>`;
+}
+
 onMounted(() => {
   initMap();
+  fetchLiveData();
 });
+
+onUnmounted(() => {
+  aggregationManager?.unregister(subscriberId);
+});
+
+watch([range, hierarchyLevel, () => tenantStore.selectedTenantId], () => {
+  aggregationManager?.unregister(subscriberId);
+  fetchLiveData();
+});
+
+function fetchLiveData() {
+  if (!aggregationManager) return;
+  const backendPeriod = range?.value || 'TODAY';
+
+  const currentHierarchy = tenantStore.selectedHierarchy;
+  if (!currentHierarchy) return;
+  
+  const virtualLevel = currentHierarchy.find(h => h.level === -1);
+  const globalNode = virtualLevel?.nodes?.[0]
+    ?? currentHierarchy.flatMap(h => h.nodes).find(n => n.isGlobal)
+    ?? null;
+
+  const targetNodes = globalNode ? [globalNode] : [];
+  if (targetNodes.length === 0) return;
+
+  const energyChannels = [];
+  targetNodes.forEach(node => {
+    energyChannels.push(...getAddressesForNode(node, config.meterChannels.activeEnergyChannel.name));
+  });
+
+  const energyAgg = {
+    key: "globalViewElectricityEnergy",
+    channels: energyChannels,
+    channelType: "energy",
+    channelsAggregationType: "sum",
+    periodAggregation: {
+      period: backendPeriod
+    }
+  };
+
+  aggregationManager.register(
+    subscriberId,
+    [energyAgg],
+    (dataMap) => {
+      if (dataMap["globalViewElectricityEnergy"] !== undefined) {
+        const energyData = dataMap["globalViewElectricityEnergy"];
+        let totalEnergyWh = energyData?.value || 0;
+        const scaled = formatValue(totalEnergyWh, config.meterChannels.activeEnergyChannel.unit);
+        
+        const s1 = stations.value.find(s => s.id === 'S1');
+        if (s1) {
+          s1.kwh = scaled.value;
+          s1.kwhTrend = energyData?.movementPercentage || 0;
+          s1.kwhUnit = scaled.unit;
+          
+          if (markers['S1'] && markers['S1'].marker) {
+             const m = markers['S1'].marker;
+             if (m.getPopup()) {
+               m.getPopup().setContent(generatePopupHTML(s1));
+             }
+          }
+        }
+      }
+    }
+  );
+}
 
 function initMap() {
   if (!mapElement.value) return;
@@ -33,7 +131,7 @@ function initMap() {
     maxZoom: 20
   }).addTo(map);
 
-  stations.forEach(s => {
+  stations.value.forEach(s => {
     const icon = L.divIcon({
       className: '',
       html: `<div class="vivo-pin ${s.state}"><div class="vivo-pin-dot ${s.state}"></div></div>`,
@@ -43,23 +141,7 @@ function initMap() {
     
     const m = L.marker([s.lat, s.lng], { icon }).addTo(map);
     
-    const popupHTML = `
-      <div class="pp">
-        <div class="pp-h">
-          <strong>${s.name}</strong>
-          <span class="pill ${s.state}">Operational</span>
-        </div>
-        <div class="pp-meta">${s.id} · Fuel Station${s.ev ? ' · EV' : ''}</div>
-        <div class="pp-kpi">
-          <div class="pp-kpi-c"><div class="k">Daily Energy</div><div class="v g">0 kWh</div></div>
-          <div class="pp-kpi-c"><div class="k">Daily Flow</div><div class="v">0</div></div>
-          <div class="pp-kpi-c"><div class="k">EV Station</div><div class="v g">0%</div></div>
-          <div class="pp-kpi-c"><div class="k">Alerts</div><div class="v g">0</div></div>
-        </div>
-        <button class="pp-go" onclick="window.dispatchEvent(new CustomEvent('open-station', {detail: '${s.id}'}))">Open station →</button>
-      </div>`;
-      
-    m.bindPopup(popupHTML, { closeButton: true, offset: [0, -2] });
+    m.bindPopup(generatePopupHTML(s), { closeButton: true, offset: [0, -2] });
     markers[s.id] = { marker: m, station: s };
   });
 
