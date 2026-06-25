@@ -11,6 +11,11 @@ const router = createRouter({
             component: () => import('@/views/pages/GlobalView.vue')
         },
         {
+            path: '/hub-station/:id',
+            name: 'hub-station',
+            component: () => import('@/views/pages/HubStationView.vue')
+        },
+        {
             path: '/dashboard',
             component: AppLayout,
             children: [

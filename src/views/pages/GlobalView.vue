@@ -67,7 +67,7 @@ function initMap() {
 }
 
 function handleOpenStation(e) {
-  router.push('/dashboard');
+  router.push(`/hub-station/${e.detail}`);
 }
 
 function filterByState(state) {
@@ -95,9 +95,6 @@ function filterByState(state) {
 
         <div class="sb-lbl">Suites — Network</div>
         <div class="sb-item"><div class="sb-ico"><i class="pi pi-bolt"></i></div><span>Energy & EV</span></div>
-        <div class="sb-item"><div class="sb-ico"><i class="pi pi-shield"></i></div><span>HSE Safety</span><span class="sb-bdg" id="sbSafetyBdg">0</span></div>
-        <div class="sb-item"><div class="sb-ico"><i class="pi pi-video"></i></div><span>Surveillance</span><span class="sb-bdg a" id="sbSecBdg">0</span></div>
-        <div class="sb-item"><div class="sb-ico"><i class="pi pi-chart-line"></i></div><span>Executive</span></div>
 
         <div class="sb-lbl">Operations</div>
         <div class="sb-item"><div class="sb-ico"><i class="pi pi-bell"></i></div><span>Alerts</span><span class="sb-bdg">0</span></div>
