@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, ref, inject, watch, onUnmounted } from 'vue';
+import { onMounted, ref, inject, watch, onUnmounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
@@ -13,7 +13,12 @@ import { getAddressesForNode } from '@/utils/configHelper';
 const router = useRouter();
 
 const stations = ref([
-  { id: 'S1', name: 'Usine VIVO', lat: 33.7796849, lng: -7.2327647, state: 'healthy', type: 'fuel', ev: true, kwh: '--', kwhUnit: 'kWh', flow: '--', kwhTrend: '--', evUtil: '--' }
+  { id: 'S1', name: 'Station AL Jazirra', lat: 33.7796849, lng: -7.2327647, state: 'healthy', type: 'fuel', ev: true, kwh: '--', kwhUnit: 'kWh', flow: '1250', kwhTrend: '--', evUtil: '65' },
+  { id: 'S2', name: 'Station Sidi Maarouf', lat: 33.535820, lng: -7.647700, state: 'critical', type: 'fuel', ev: false, kwh: '235', kwhUnit: 'kWh', flow: '850', kwhTrend: '+12', evUtil: '--' },
+  { id: 'S3', name: 'Station Ain Sebaa', lat: 33.605381, lng: -7.530510, state: 'degraded', type: 'fuel', ev: true, kwh: '410', kwhUnit: 'kWh', flow: '1100', kwhTrend: '-2', evUtil: '40' },
+  { id: 'S4', name: 'Station Maarif', lat: 33.585200, lng: -7.633500, state: 'healthy', type: 'fuel', ev: false, kwh: '150', kwhUnit: 'kWh', flow: '1800', kwhTrend: '+5', evUtil: '--' },
+  { id: 'S5', name: 'Station Kenitra', lat: 34.261012, lng: -6.580234, state: 'healthy', type: 'fuel', ev: false, kwh: '190', kwhUnit: 'kWh', flow: '900', kwhTrend: '+1', evUtil: '--' },
+  { id: 'S6', name: 'Station Mohammedia Est', lat: 33.705645, lng: -7.387922, state: 'healthy', type: 'fuel', ev: true, kwh: '340', kwhUnit: 'kWh', flow: '1500', kwhTrend: '+4', evUtil: '45' }
 ]);
 
 const alerts = [];
@@ -23,7 +28,13 @@ const mapElement = ref(null);
 let map = null;
 const markers = {};
 
-const counts = ref({ healthy: 1, degraded: 0, critical: 0, offline: 0 });
+const counts = computed(() => {
+  const c = { healthy: 0, degraded: 0, critical: 0, offline: 0 };
+  stations.value.forEach(s => {
+    if(c[s.state] !== undefined) c[s.state]++;
+  });
+  return c;
+});
 const incCounts = ref({ safety: 0, security: 0, energy: 0 });
 
 const dashboardStore = useDashboardStore();
@@ -124,7 +135,7 @@ function fetchLiveData() {
 
 function initMap() {
   if (!mapElement.value) return;
-  map = L.map(mapElement.value, { zoomControl: true, attributionControl: true }).setView([33.7796849, -7.2327647], 15);
+  map = L.map(mapElement.value, { zoomControl: true, attributionControl: true }).setView([33.8, -7.0], 8);
   
   L.tileLayer('https://mt1.google.com/vt/lyrs=m&hl=fr&gl=MA&x={x}&y={y}&z={z}', {
     attribution: '© Google Maps',
@@ -173,7 +184,7 @@ function filterByState(state) {
       <nav class="sb-nav">
         <div class="sb-lbl">Network</div>
         <div class="sb-item active"><div class="sb-ico"><i class="pi pi-globe"></i></div><span>Network View</span></div>
-        <div class="sb-item"><div class="sb-ico"><i class="pi pi-map-marker"></i></div><span>Stations</span><span class="sb-bdg b">1</span></div>
+        <div class="sb-item"><div class="sb-ico"><i class="pi pi-map-marker"></i></div><span>Stations</span><span class="sb-bdg b">{{ stations.length }}</span></div>
 
         <div class="sb-lbl">Suites — Network</div>
         <div class="sb-item"><div class="sb-ico"><i class="pi pi-bolt"></i></div><span>Energy & EV</span></div>
@@ -189,7 +200,7 @@ function filterByState(state) {
       </nav>
       <div class="sb-foot">
         <span class="sb-dot"></span>
-        <span>1 station · 1 online</span>
+        <span>{{ stations.length }} station{{ stations.length > 1 ? 's' : '' }} · {{ counts.healthy }} online</span>
       </div>
     </aside>
 
@@ -198,7 +209,7 @@ function filterByState(state) {
         <div class="tb-l">
           <div>
             <div class="tb-title">Network View · Morocco</div>
-            <div class="tb-sub">L1 · Network · 1 station</div>
+            <div class="tb-sub">L1 · Network · {{ stations.length }} station{{ stations.length > 1 ? 's' : '' }}</div>
           </div>
           <span class="scope-chip">🇲🇦 National</span>
         </div>
@@ -247,10 +258,10 @@ function filterByState(state) {
             <div class="ip-h"><div class="ip-h-l"><div class="ip-h-ico n"><i class="pi pi-globe"></i></div><strong>Network Status</strong></div><span class="ip-h-r">real-time</span></div>
             <div class="ip-body">
               <div class="ss-grid">
-                <div class="ss-c h" @click="filterByState('healthy')"><div class="ssl">Operational</div><div class="ssv">1</div><div class="ssp">100%</div></div>
-                <div class="ss-c d" @click="filterByState('degraded')"><div class="ssl">Degraded</div><div class="ssv">0</div><div class="ssp">0%</div></div>
-                <div class="ss-c c" @click="filterByState('critical')"><div class="ssl">Critical</div><div class="ssv">0</div><div class="ssp">0%</div></div>
-                <div class="ss-c o" @click="filterByState('offline')"><div class="ssl">Offline</div><div class="ssv">0</div><div class="ssp">0%</div></div>
+                <div class="ss-c h" @click="filterByState('healthy')"><div class="ssl">Operational</div><div class="ssv">{{ counts.healthy }}</div><div class="ssp">{{ Math.round((counts.healthy / stations.length) * 100) || 0 }}%</div></div>
+                <div class="ss-c d" @click="filterByState('degraded')"><div class="ssl">Degraded</div><div class="ssv">{{ counts.degraded }}</div><div class="ssp">{{ Math.round((counts.degraded / stations.length) * 100) || 0 }}%</div></div>
+                <div class="ss-c c" @click="filterByState('critical')"><div class="ssl">Critical</div><div class="ssv">{{ counts.critical }}</div><div class="ssp">{{ Math.round((counts.critical / stations.length) * 100) || 0 }}%</div></div>
+                <div class="ss-c o" @click="filterByState('offline')"><div class="ssl">Offline</div><div class="ssv">{{ counts.offline }}</div><div class="ssp">{{ Math.round((counts.offline / stations.length) * 100) || 0 }}%</div></div>
               </div>
             </div>
           </div>

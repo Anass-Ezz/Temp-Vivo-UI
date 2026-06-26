@@ -13,11 +13,20 @@ const route = useRoute();
 const stationId = route.params.id || 'S1';
 
 // Mocks
-const currentStation = ref({
+const mockData = {
+  'S1': { name: 'Station AL Jazirra', city: 'Mohammedia', manager: 'Ahmed Alaoui', ev: true, kwh: '--', flow: 1250, evUtil: 65, state: 'healthy' },
+  'S2': { name: 'Station Sidi Maarouf', city: 'Casablanca', manager: 'Sara Benali', ev: false, kwh: 235, flow: 850, evUtil: '--', state: 'critical' },
+  'S3': { name: 'Station Ain Sebaa', city: 'Casablanca', manager: 'Karim Mansouri', ev: true, kwh: 410, flow: 1100, evUtil: 40, state: 'degraded' },
+  'S4': { name: 'Station Maarif', city: 'Casablanca', manager: 'Nadia Idrissi', ev: false, kwh: 150, flow: 1800, evUtil: '--', state: 'healthy' },
+  'S5': { name: 'Station Kenitra', city: 'Kenitra', manager: 'Omar Tazi', ev: false, kwh: 190, flow: 900, evUtil: '--', state: 'healthy' },
+  'S6': { name: 'Station Mohammedia Est', city: 'Mohammedia', manager: 'Hassan Amrani', ev: true, kwh: 340, flow: 1500, evUtil: 45, state: 'healthy' }
+};
+
+const defaultStation = {
   id: stationId,
-  name: stationId === 'S1' ? 'Usine VIVO' : 'Station ' + stationId,
+  name: 'Station ' + stationId,
   city: 'Casablanca',
-  manager: 'Ahmed Alaoui',
+  manager: 'Manager',
   phone: '+212 600 00 00 00',
   hours: '24/7',
   openedYear: 2018,
@@ -39,7 +48,10 @@ const currentStation = ref({
   flow: 1250,
   flowTrend: 5,
   type: 'fuel'
-});
+};
+
+const stationData = mockData[stationId] || {};
+const currentStation = ref({ ...defaultStation, ...stationData, id: stationId });
 
 const dashboardStore = useDashboardStore();
 const tenantStore = useTenantStore();
