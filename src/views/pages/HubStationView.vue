@@ -136,31 +136,34 @@ function getSuiteKPIs(suiteId){
     const trendColor = s.kwhTrend === '--' ? 'g' : (s.kwhTrend > 10 ? 'r' : (s.kwhTrend > 0 ? 'a' : 'g'));
     return [
       {l:'Conso j.', v: s.kwh + ' ' + (s.kwhUnit || 'kWh'), t: trendColor, s: trendText},
-      {l:'EV util.', v: '--', t: 'g', s: '--'}
+      {l:'EV util.', v: s.evUtil + '%', t: s.evUtil > 80 ? 'r' : s.evUtil > 60 ? 'a' : 'g', s: s.evChargers + ' bornes'}
     ];
   }
   if(suiteId==='safety'){
     return [
-      {l:'Alertes', v:'--', t: 'g', s: '--'},
-      {l:'Incidents 24h', v:'--', t:'g', s: '--'}
+      {l:'Alertes', v:'0', t: 'g', s: 'rien à signaler'},
+      {l:'Incidents 24h', v:'0', t:'g', s: '0 ouvert(s)'}
     ];
   }
   if(suiteId==='security'){
     return [
-      {l:'Caméras', v:'--', t:'g', s:'--'},
-      {l:'Incidents 24h', v:'--', t:'g', s: '--'}
+      {l:'Caméras', v: s.cameras, t:'g', s:'toutes opérationnelles'},
+      {l:'Incidents 24h', v:'0', t:'g', s: 'aucune intrusion'}
     ];
   }
   if(suiteId==='flow'){
+    const trendStr = s.flowTrend > 0 ? '+' + s.flowTrend : s.flowTrend;
     return [
-      {l:'Visiteurs j.', v:'--', t:'g', s:'--'},
-      {l:'Conv. shop', v: '--', t:'g', s: '--'}
+      {l:'Visiteurs j.', v: s.flow.toLocaleString('fr'), t:s.flowTrend>0?'g':'r', s: trendStr + '% vs moy. 7j'},
+      {l:'Conv. shop', v: s.hasStore ? '34%' : '—', t:'a', s: s.hasStore ? '+2pts vs réseau' : 'pas de shop'}
     ];
   }
   if(suiteId==='exec'){
+    const score = 85;
+    const rank = 4;
     return [
-      {l:'Score station', v:'--', t:'g', s: '--'},
-      {l:'Classement', v:'--', t:'g', s:'--'}
+      {l:'Score station', v:score+'/100', t:score>80?'g':score>60?'a':'r', s: score>80?'Top 25% réseau': score>60?'Médian':'Bas du classement'},
+      {l:'Classement', v:'#'+rank, t:rank<=5?'g':rank<=10?'a':'r', s:'sur 42 stations'}
     ];
   }
   return [];
@@ -186,6 +189,10 @@ function getSuiteKPIs(suiteId){
       <div class="sb-lbl">Cette Station</div>
       <div class="sb-item active"><div class="sb-ico"><i class="pi pi-home"></i></div><span>Hub Station</span></div>
       <div class="sb-item" @click="openSuite('energy')"><div class="sb-ico"><i class="pi pi-bolt"></i></div><span>Énergie & EV</span></div>
+      <div class="sb-item" @click="openSuite('safety')"><div class="sb-ico"><i class="pi pi-shield"></i></div><span>Sécurité HSE</span></div>
+      <div class="sb-item" @click="openSuite('security')"><div class="sb-ico"><i class="pi pi-video"></i></div><span>Surveillance</span></div>
+      <div class="sb-item" @click="openSuite('flow')"><div class="sb-ico"><i class="pi pi-users"></i></div><span>Flow & Clients</span></div>
+      <div class="sb-item" @click="openSuite('exec')"><div class="sb-ico"><i class="pi pi-chart-line"></i></div><span>Executive</span></div>
 
       <div class="sb-lbl">Réseau</div>
       <div class="sb-item" @click="goBack"><div class="sb-ico"><i class="pi pi-globe"></i></div><span>Vue Réseau</span></div>
@@ -264,10 +271,14 @@ function getSuiteKPIs(suiteId){
             <span class="sec-r">{{ SUITES.length }} suites · cliquer pour drill</span>
           </div>
           <div class="health-strip">
-            <div v-for="s in SUITES" :key="s.id" class="hs-chip" :class="s.id === 'energy' ? 'h' : 'disabled-item'" @click="s.id === 'energy' && openSuite(s.id)">
+            <div v-for="s in SUITES" :key="s.id" class="hs-chip h" @click="openSuite(s.id)">
               <div class="hs-chip-top"><span class="hs-chip-ico"><i :class="s.icon"></i></span><span class="hs-chip-name">{{ s.short }}</span></div>
               <div class="hs-chip-metric">
                 <template v-if="s.id === 'energy'">{{ currentStation.kwh }} {{ currentStation.kwhUnit || 'kWh' }} <span class="pill-mini h">{{ currentStation.kwhTrend === '--' ? '--' : currentStation.kwhTrend + '%' }}</span></template>
+                <template v-else-if="s.id === 'safety'">OK <span class="pill-mini h">OK</span></template>
+                <template v-else-if="s.id === 'security'">OK <span class="pill-mini h">OK</span></template>
+                <template v-else-if="s.id === 'flow'">{{ currentStation.flow.toLocaleString('fr') }} visit. <span class="pill-mini h">+{{ currentStation.flowTrend }}%</span></template>
+                <template v-else-if="s.id === 'exec'">85/100 <span class="pill-mini h">A</span></template>
                 <template v-else>-- <span class="pill-mini h">--</span></template>
               </div>
             </div>
@@ -280,7 +291,7 @@ function getSuiteKPIs(suiteId){
             <span class="sec-r">Hub → Suite (L3)</span>
           </div>
           <div class="tiles-grid">
-            <div v-for="s in SUITES.filter(s => s.id === 'energy')" :key="s.id" class="tile" :class="s.id === 'energy' ? '' : 'disabled-item'" @click="s.id === 'energy' && openSuite(s.id)">
+            <div v-for="s in SUITES" :key="s.id" class="tile" @click="openSuite(s.id)">
               <div class="tile-h">
                 <div class="tile-h-l">
                   <div class="tile-ico" :class="s.color"><i :class="s.icon"></i></div>
@@ -450,33 +461,34 @@ function getSuiteKPIs(suiteId){
 .main{flex:1;display:grid;grid-template-columns:1fr 340px;gap:16px;padding:16px;overflow:hidden;min-height:0}
 .col-left{display:flex;flex-direction:column;gap:16px;overflow-y:auto;min-height:0;padding-right:4px}
 .col-right{display:flex;flex-direction:column;gap:16px;overflow-y:auto;min-height:0;padding-right:4px}
+.col-left > *, .col-right > * { flex-shrink: 0; }
 
 .col-left::-webkit-scrollbar, .col-right::-webkit-scrollbar { width: 6px; }
 .col-left::-webkit-scrollbar-track, .col-right::-webkit-scrollbar-track { background: transparent; }
 .col-left::-webkit-scrollbar-thumb, .col-right::-webkit-scrollbar-thumb { background: var(--b4); border-radius: 4px; }
 
 /* Identity Card */
-.id-card{background:linear-gradient(135deg,var(--b2) 0%,var(--b3) 100%);border:1px solid var(--br2);border-radius:var(--rl);padding:20px 24px;box-shadow:var(--sh);position:relative;overflow:hidden}
+.id-card{background:linear-gradient(135deg,var(--b2) 0%,var(--b3) 100%);border:1px solid var(--br2);border-radius:var(--rl);padding:20px 24px;box-shadow:var(--sh);position:relative;overflow:hidden;flex-shrink:0;}
 .id-card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,var(--ac),var(--bl))}
 .id-card.critical::before{background:linear-gradient(90deg,var(--rd),var(--am))}
 .id-card.degraded::before{background:linear-gradient(90deg,var(--am),var(--bl))}
-.id-grid{display:grid;grid-template-columns:1fr auto;gap:16px;align-items:flex-start}
-.id-l{display:flex;align-items:flex-start;gap:16px;min-width:0}
-.id-icon{width:64px;height:64px;border-radius:12px;background:linear-gradient(135deg,#e30613,#a00410);display:grid;place-items:center;font-size:32px;color: white; flex-shrink:0;box-shadow:0 4px 12px rgba(227,6,19,.3)}
+.id-grid{display:flex;align-items:center;justify-content:space-between;gap:16px;min-height:min-content}
+.id-l{display:flex;align-items:center;gap:16px;min-width:0;flex:1}
+.id-icon{width:64px;height:64px;border-radius:12px;background:linear-gradient(135deg,#e30613,#a00410);display:flex;align-items:center;justify-content:center;font-size:32px;color: white; flex-shrink:0;box-shadow:0 4px 12px rgba(227,6,19,.3)}
 .id-meta{min-width:0;flex:1}
-.id-name{font-size:24px;font-weight:700;letter-spacing:-.02em;color:var(--t0);line-height:1.2;margin-bottom:6px}
-.id-sub{font-size:12px;color:var(--t2);font-family:var(--mo);margin-bottom:12px}
+.id-name{font-size:24px;font-weight:700;letter-spacing:-.02em;color:var(--t0);line-height:1.2;margin-bottom:4px}
+.id-sub{font-size:12px;color:var(--t2);font-family:var(--mo);margin-bottom:8px}
 .id-tags{display:flex;flex-wrap:wrap;gap:6px}
 .id-tag{display:inline-flex;align-items:center;font-size:10px;padding:4px 10px;background:var(--b4);border:1px solid var(--br1);color:var(--t2);border-radius:99px;font-weight:500;letter-spacing:.02em}
 .id-tag.hl{background:var(--bls);border-color:var(--blb);color:var(--bl)}
-.id-r{display:flex;flex-direction:column;align-items:flex-end;gap:8px}
-.id-state-l{font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.06em;font-weight:600}
-.pill { padding: 4px 12px; border-radius: 99px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+.id-r{display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0}
+.id-state-l{font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.06em;font-weight:600;margin-bottom:2px}
+.pill { padding: 4px 12px; border-radius: 99px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; display: inline-block; }
 .pill.healthy { background: var(--acs); color: var(--ac); border: 1px solid var(--acb); }
-.id-state-time{font-size:10px;color:var(--t3);font-family:var(--mo)}
-.id-actions{display:flex;gap:8px;margin-top:10px}
+.id-state-time{font-size:10px;color:var(--t3);font-family:var(--mo);margin-top:2px}
+.id-actions{display:flex;gap:8px;margin-top:6px}
 .btn { background: var(--b3); border: 1px solid var(--br1); color: var(--t1); border-radius: 6px; cursor: pointer; transition: var(--tr); }
-.btn-s { padding: 6px 12px; font-size: 11px; font-weight: 600; }
+.btn-s { padding: 6px 12px; font-size: 11px; font-weight: 600; display: flex; align-items: center; }
 .btn:hover { background: var(--b4); }
 
 /* Health Strip */
